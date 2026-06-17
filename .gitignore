@@ -30,3 +30,9 @@ Thumbs.db
 
 # Local databases (use init scripts instead)
 *.db
+
+# Temporary / Scratch files
+backend/scratch/
+backend/training_status.json
+backend/system_config.json
+backend/uploads/

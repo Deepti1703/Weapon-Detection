@@ -3,13 +3,27 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FaShieldAlt, FaKey, FaArrowLeft, FaCheckCircle, FaCamera, FaUserPlus, FaUser, FaLock, FaEnvelope, FaPhone, FaIdBadge } from 'react-icons/fa';
+import { FaShieldAlt, FaKey, FaArrowLeft, FaCheckCircle, FaCamera, FaUserPlus, FaUser, FaLock, FaEnvelope, FaPhone, FaIdBadge, FaEye, FaEyeSlash } from 'react-icons/fa';
 import BiometricAuth from '../components/BiometricAuth';
 
 const Login = () => {
- const { login } = useAuth();
+ const { user, login, sessionExpired, clearSessionExpired } = useAuth();
  const navigate = useNavigate();
  const toast = useToast();
+
+ useEffect(() => {
+   if (user) {
+     if (!user.is_profile_complete) navigate('/setup');
+     else navigate('/');
+   }
+ }, [user, navigate]);
+
+ useEffect(() => {
+   if (sessionExpired) {
+     toast.error('Your session has expired. Please sign in again.');
+     clearSessionExpired();
+   }
+ }, [sessionExpired, clearSessionExpired, toast]);
 
  const [activeTab, setActiveTab] = useState('login'); // 'login' | 'register'
  const [loading, setLoading] = useState(false);
@@ -17,10 +31,12 @@ const Login = () => {
  // Login State
  const [loginUsername, setLoginUsername] = useState('');
  const [loginPassword, setLoginPassword] = useState('');
+ const [rememberMe, setRememberMe] = useState(false);
  const [isRecoveryMode, setIsRecoveryMode] = useState(false);
  const [recoveryEmail, setRecoveryEmail] = useState('');
  const [recoverySuccess, setRecoverySuccess] = useState(null);
  const [showBiometric, setShowBiometric] = useState(false);
+ const [showPassword, setShowPassword] = useState(false);
 
  // Register State
  const [regStep, setRegStep] = useState(1); // 1: Details, 2: OTP
@@ -33,7 +49,18 @@ const Login = () => {
  const [showRegBiometric, setShowRegBiometric] = useState(false);
 
  useEffect(() => {
- setLoginUsername(''); setLoginPassword('');
+   if (activeTab === 'login') {
+     const savedUsername = localStorage.getItem('remembered_username');
+     if (savedUsername) {
+       setLoginUsername(savedUsername);
+       setRememberMe(true);
+     } else {
+       setLoginUsername('');
+     }
+   } else {
+     setLoginUsername('');
+   }
+   setLoginPassword('');
  }, [activeTab]);
 
  const handleLogin = async (e) => {
@@ -47,6 +74,13 @@ const Login = () => {
  const userResponse = await axios.get('http://127.0.0.1:8000/api/me', {
  headers: { Authorization: `Bearer ${access_token}` }
  });
+
+ if (rememberMe) {
+   localStorage.setItem('remembered_username', loginUsername);
+ } else {
+   localStorage.removeItem('remembered_username');
+ }
+
  login(userResponse.data, access_token);
  if (!userResponse.data.is_profile_complete) navigate('/setup');
  else navigate('/');
@@ -220,9 +254,20 @@ const Login = () => {
  <div>
  <div className="flex justify-between items-center mb-2">
  <label className="block text-sm font-semibold text-text dark:text-dark-text">Password</label>
- <button type="button" onClick={() => setIsRecoveryMode(true)} className="text-xs text-primary hover:text-primary-hover font-bold transition-colors">Forgot Password?</button>
  </div>
- <input type="password" className="w-full px-4 py-3 rounded-lg border border-border dark:border-dark-border bg-card dark:bg-dark-card text-text dark:text-dark-text focus:ring-2 focus:ring-primary outline-none transition-all placeholder-muted" placeholder="••••••••" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required />
+ <div className="relative">
+ <input type={showPassword ? "text" : "password"} className="w-full px-4 py-3 rounded-lg border border-border dark:border-dark-border bg-card dark:bg-dark-card text-text dark:text-dark-text focus:ring-2 focus:ring-primary outline-none transition-all placeholder-muted pr-10" placeholder="••••••••" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required />
+ <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted hover:text-text focus:outline-none">
+   {showPassword ? <FaEyeSlash /> : <FaEye />}
+ </button>
+ </div>
+ <div className="flex items-center justify-between mt-3">
+ <label className="flex items-center space-x-2 text-sm text-slate-600 dark:text-slate-400 cursor-pointer">
+   <input type="checkbox" className="rounded border-slate-300 text-primary focus:ring-primary w-4 h-4" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
+   <span>Remember me</span>
+ </label>
+ <button type="button" onClick={() => setIsRecoveryMode(true)} className="text-xs text-primary hover:text-primary-hover font-bold transition-colors">Forgot password?</button>
+ </div>
  </div>
  <button type="submit" disabled={loading} className={`w-full py-3 rounded-lg text-white font-semibold transition-all shadow-md ${loading ? 'bg-red-800 cursor-not-allowed' : 'bg-primary hover:bg-primary-hover hover:shadow-lg focus:ring-4 focus:ring-red-900/50'}`}>
  {loading ? 'Authenticating...' : 'Secure Login'}

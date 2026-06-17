@@ -5,8 +5,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Require PostgreSQL, or fallback to sensible default for Postgres on local
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/forensic_app")
+# PostgreSQL/MySQL via DATABASE_URL in production; SQLite default for local development.
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+_DEFAULT_SQLITE = f"sqlite:///{os.path.join(_BASE_DIR, 'forensic_app.db').replace(chr(92), '/')}"
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", _DEFAULT_SQLITE)
 
 _connect_args = {}
 # Check if it is sqlite instead of postgresql for development reasons

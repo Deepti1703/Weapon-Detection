@@ -1,0 +1,9 @@
+image_path,wound_type,weapon_type,severity,anatomical_location,split
+images/1_wound1.webp,Low Confidence – Expert Review Recommended,Low Confidence – Expert Review Recommended,Moderate,Unknown,train
+images/1_gunshot-wounds.webp,Gunshot,Gun,Moderate,Unknown,train
+images/1_gunshot-wounds_1.webp,Gunshot,Gun,Moderate,Unknown,train
+images/1_gunshot-wounds_2.webp,Gunshot,Gun,Moderate,Unknown,train
+images/1_wound1_1.webp,Chop,Broken Glass,Moderate,Unknown,train
+images/1_knife wound.webp,Incised,Knife,Moderate,Unknown,train
+images/1_wound1_2.webp,Incised,Broken Glass,Moderate,Unknown,train
+images/1_knife wound_1.webp,Knife Wound,Knife,Moderate,Unknown,train

@@ -1,259 +1,233 @@
+"""
+Train ensemble forensic model with dual labels, augmentation, metrics, and checkpoint export.
+Usage:
+  python train_model.py --dataset dataset --epochs 30 --batch_size 16
+"""
+
+import argparse
+import copy
+import json
+import os
+from typing import Dict, List, Tuple
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, random_split, Dataset
-from torchvision import datasets, transforms
-import os
-import argparse
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+)
+from torch.utils.data import DataLoader, Subset
+from torchvision import transforms
 from tqdm import tqdm
-import copy
-import cv2
-import numpy as np
-from PIL import Image
 
-# Import the existing model architecture
-from ai_module import EnsembleModel, WEAPON_CLASSES, WOUND_CLASSES, device, preprocess_image_cv2
+from ai_module import EnsembleModel, device, preprocess_image_cv2
+from dataset_pipeline import DualLabelForensicDataset, ensure_dataset_structure, import_from_uploads, write_labels_template
+from forensic_taxonomy import METRICS_PATH, MODEL_WEIGHTS_PATH, WEAPON_CLASSES, WOUND_CLASSES
 
-class CustomForensicDataset(Dataset):
-    def __init__(self, root_dir, transform=None):
-        self.root_dir = root_dir
-        self.transform = transform
-        self.samples = []
-        self.classes = sorted(os.listdir(root_dir))
-        self.class_to_idx = {cls_name: i for i, cls_name in enumerate(self.classes)}
-        
-        for cls_name in self.classes:
-            cls_dir = os.path.join(root_dir, cls_name)
-            if not os.path.isdir(cls_dir):
-                continue
-            for fname in os.listdir(cls_dir):
-                if fname.lower().endswith(('.jpg', '.png', '.jpeg')):
-                    self.samples.append((os.path.join(cls_dir, fname), self.class_to_idx[cls_name]))
+BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_DATASET = os.path.join(BACKEND_DIR, "dataset")
 
-    def __len__(self):
-        return len(self.samples)
 
-    def __getitem__(self, idx):
-        img_path, target = self.samples[idx]
-        
-        # We must load exact bytes to pipe into preprocess_image_cv2 like the API endpoint does
-        try:
-            with open(img_path, "rb") as f:
-                img_bytes = f.read()
-            # Apply exact OpenCV logic
-            img = preprocess_image_cv2(img_bytes)
-        except Exception:
-            # Fallback if corrupted
-            img = Image.new('RGB', (224, 224), (0,0,0))
-            
-        if self.transform:
-            img = self.transform(img)
-            
-        return img, target
+def collate_dual(batch):
+    imgs, weapon_labels, wound_labels, _meta = zip(*batch)
+    return torch.stack(imgs), torch.tensor(weapon_labels), torch.tensor(wound_labels)
 
-def create_data_loaders(dataset_path: str, batch_size=32):
-    """
-    Creates Training, Validation, and Testing DataLoaders with Heavy Data Augmentation.
-    Assumes standard ImageFolder format:
-    dataset_path/
-        weapons/
-            Knife/
-            Gun/
-            ...
-        wounds/
-            Stab/
-            Laceration/
-            ...
-    Note: For a multi-label output, a custom dataset class might be needed.
-    Here we build a robust architecture that can be extended easily.
-    """
-    print("Initializing Data Transformations & Augmentations...")
-    # Robust data augmentation for training
-    train_transform = transforms.Compose([
-        transforms.RandomResizedCrop(224, scale=(0.8, 1.0)),
+
+def build_loaders(dataset_path: str, batch_size: int):
+    train_tf = transforms.Compose([
+        transforms.RandomResizedCrop(224, scale=(0.75, 1.0)),
         transforms.RandomHorizontalFlip(p=0.5),
-        transforms.RandomRotation(degrees=15),
-        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
+        transforms.RandomRotation(15),
+        transforms.ColorJitter(brightness=0.25, contrast=0.25, saturation=0.2, hue=0.08),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
-
-    # Clean transforms for validation/testing
-    eval_transform = transforms.Compose([
+    eval_tf = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
 
-    # Check if dataset exists
-    if not os.path.exists(dataset_path):
-        print(f"Dataset path {dataset_path} not found. A valid ImageFolder layout is required.")
-        return None, None, None
+    full = DualLabelForensicDataset(dataset_path, transform=train_tf)
+    if len(full) < 3:
+        return None, None, None, full
 
-    # Load robust dataset wrapping preprocess_image_cv2
-    try:
-        full_dataset = CustomForensicDataset(root_dir=dataset_path, transform=train_transform)
-    except Exception as e:
-        print(f"Could not load dataset: {e}")
-        return None, None, None
+    n = len(full)
+    train_n = max(1, int(0.7 * n))
+    val_n = max(1, int(0.15 * n))
+    test_n = n - train_n - val_n
+    if test_n < 1:
+        test_n = 1
+        val_n = max(1, n - train_n - test_n)
 
-    # Split: 70% Train, 15% Val, 15% Test
-    dataset_size = len(full_dataset)
-    train_size = int(0.7 * dataset_size)
-    val_size = int(0.15 * dataset_size)
-    test_size = dataset_size - train_size - val_size
-
-    train_dataset, val_dataset, test_dataset = random_split(
-        full_dataset, [train_size, val_size, test_size], generator=torch.Generator().manual_seed(42)
+    gen = torch.Generator().manual_seed(42)
+    train_ds, val_ds, test_ds = torch.utils.data.random_split(
+        full, [train_n, val_n, test_n], generator=gen
     )
 
-    # Apply non-augmented transforms to Validation and Test sets
-    val_dataset.dataset = copy.deepcopy(full_dataset)
-    test_dataset.dataset = copy.deepcopy(full_dataset)
-    val_dataset.dataset.transform = eval_transform
-    test_dataset.dataset.transform = eval_transform
+    # Eval transforms on val/test
+    val_copy = copy.deepcopy(full)
+    val_copy.transform = eval_tf
+    test_copy = copy.deepcopy(full)
+    test_copy.transform = eval_tf
+    val_ds.dataset = val_copy
+    test_ds.dataset = test_copy
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=0, collate_fn=collate_dual)
+    val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=0, collate_fn=collate_dual)
+    test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False, num_workers=0, collate_fn=collate_dual)
+    return train_loader, val_loader, test_loader, full
 
-    return train_loader, val_loader, test_loader
 
-def calculate_metrics(preds, targets):
-    """ Calculate basic accuracy. Extendable to Precision, Recall, F1 via sklearn """
-    _, predicted = torch.max(preds, 1)
-    correct = (predicted == targets).sum().item()
-    return correct, len(targets)
+def run_epoch(model, loader, criterion_w, criterion_d, optimizer=None) -> Tuple[float, Dict]:
+    is_train = optimizer is not None
+    model.train() if is_train else model.eval()
 
-def train_model(data_dir: str, epochs=50, batch_size=32, lr=1e-4):
-    print(f"Setting up training environment on Device: {device}")
-    
-    # Instantiate
-    model = EnsembleModel().to(device)
-    
-    # Multi-head loss
-    criterion_weapon = nn.CrossEntropyLoss()
-    criterion_wound = nn.CrossEntropyLoss()
-    
-    # Optimizer (AdamW is excellent for Transfer Learning)
-    optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
-    
-    # Learning Rate Scheduler
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=3, verbose=True)
+    total_loss = 0.0
+    weapon_preds, weapon_true = [], []
+    wound_preds, wound_true = [], []
+    n_samples = 0
 
-    loaders = create_data_loaders(data_dir, batch_size)
+    ctx = torch.enable_grad() if is_train else torch.no_grad()
+    with ctx:
+        for inputs, w_labels, d_labels in loader:
+            inputs = inputs.to(device)
+            w_labels = w_labels.to(device)
+            d_labels = d_labels.to(device)
+
+            if is_train:
+                optimizer.zero_grad()
+
+            w_out, d_out = model(inputs)
+            loss_w = criterion_w(w_out, w_labels)
+            loss_d = criterion_d(d_out, d_labels)
+            loss = loss_w + loss_d
+
+            if is_train:
+                loss.backward()
+                optimizer.step()
+
+            total_loss += loss.item() * inputs.size(0)
+            n_samples += inputs.size(0)
+
+            wp = torch.argmax(w_out, dim=1).cpu().numpy()
+            dp = torch.argmax(d_out, dim=1).cpu().numpy()
+            weapon_preds.extend(wp)
+            weapon_true.extend(w_labels.cpu().numpy())
+            wound_preds.extend(dp)
+            wound_true.extend(d_labels.cpu().numpy())
+
+    metrics = {
+        "weapon_accuracy": accuracy_score(weapon_true, weapon_preds) if weapon_true else 0,
+        "wound_accuracy": accuracy_score(wound_true, wound_preds) if wound_true else 0,
+        "weapon_precision": precision_score(weapon_true, weapon_preds, average="weighted", zero_division=0),
+        "weapon_recall": recall_score(weapon_true, weapon_preds, average="weighted", zero_division=0),
+        "weapon_f1": f1_score(weapon_true, weapon_preds, average="weighted", zero_division=0),
+        "wound_precision": precision_score(wound_true, wound_preds, average="weighted", zero_division=0),
+        "wound_recall": recall_score(wound_true, wound_preds, average="weighted", zero_division=0),
+        "wound_f1": f1_score(wound_true, wound_preds, average="weighted", zero_division=0),
+        "weapon_confusion": confusion_matrix(weapon_true, weapon_preds).tolist() if weapon_true else [],
+        "wound_confusion": confusion_matrix(wound_true, wound_preds).tolist() if wound_true else [],
+    }
+    avg_loss = total_loss / max(n_samples, 1)
+    return avg_loss, metrics
+
+
+def train_model(
+    data_dir: str = DEFAULT_DATASET,
+    epochs: int = 30,
+    batch_size: int = 16,
+    lr: float = 1e-4,
+):
+    ensure_dataset_structure(data_dir)
+    imported = import_from_uploads(os.path.join(BACKEND_DIR, "uploads", "images"), data_dir)
+    labels_csv = os.path.join(data_dir, "labels.csv")
+    if not os.path.isfile(labels_csv):
+        n = write_labels_template(labels_csv, os.path.join(data_dir, "images"))
+        print(f"Created labels template with {n} rows at {labels_csv}")
+
+    loaders = build_loaders(data_dir, batch_size)
     if loaders[0] is None:
-        print("Training aborted. Cannot create dataloaders.")
+        print("Not enough labeled images. Add data under dataset/images + labels.csv")
         return
 
-    train_loader, val_loader, test_loader = loaders
+    train_loader, val_loader, test_loader, full_ds = loaders
+    print(f"Dataset size: {len(full_ds)} | train={len(train_loader.dataset)} val={len(val_loader.dataset)} test={len(test_loader.dataset)}")
 
-    best_val_acc = 0.0
-    best_model_wts = copy.deepcopy(model.state_dict())
-    
-    # Early Stopping tracking
-    patience = 7
-    epochs_no_improve = 0
+    model = EnsembleModel().to(device)
+    criterion_w = nn.CrossEntropyLoss()
+    criterion_d = nn.CrossEntropyLoss()
+    optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="max", factor=0.5, patience=4)
 
-    print("Beginning Training Loop...")
+    best_score = 0.0
+    best_wts = copy.deepcopy(model.state_dict())
+    patience = 8
+    no_improve = 0
+    history: List[dict] = []
+
     for epoch in range(epochs):
-        print(f"\nEpoch {epoch+1}/{epochs}")
-        print("-" * 20)
-        
-        # Training Phase
-        model.train()
-        running_loss = 0.0
-        correct_weapons = 0
-        total_samples = 0
-        
-        pbar = tqdm(train_loader, desc="Training")
-        for inputs, labels in pbar:
-            inputs = inputs.to(device)
-            # Assuming labels are tuples of (weapon_class, wound_class) for a custom dataset
-            # We will use the generic labels from ImageFolder as a fallback for weapons
-            labels = labels.to(device)
-            
-            optimizer.zero_grad()
-            
-            # Forward
-            weapon_preds, wound_preds = model(inputs)
-            
-            # Calculate Loss (Example focuses heavily on Weapons, assumes labels=weapon_class)
-            loss_w = criterion_weapon(weapon_preds, labels)
-            # In a real dual-label scenario, you would have wound_labels and calculate loss_wound = criterion_wound(wound_preds, wound_labels)
-            # loss = loss_w + loss_wound
-            loss = loss_w
-            
-            # Backward
-            loss.backward()
-            optimizer.step()
-            
-            running_loss += loss.item() * inputs.size(0)
-            
-            # Metrics
-            c, t = calculate_metrics(weapon_preds, labels)
-            correct_weapons += c
-            total_samples += t
-            
-            pbar.set_postfix({'Loss': f"{loss.item():.4f}"})
+        print(f"\nEpoch {epoch + 1}/{epochs}")
+        train_loss, train_m = run_epoch(model, train_loader, criterion_w, criterion_d, optimizer)
+        val_loss, val_m = run_epoch(model, val_loader, criterion_w, criterion_d)
+        combined_f1 = (val_m["weapon_f1"] + val_m["wound_f1"]) / 2
+        scheduler.step(combined_f1)
 
-        epoch_loss = running_loss / total_samples
-        epoch_acc = correct_weapons / total_samples
-        print(f"Train Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}")
-        
-        # Validation Phase
-        model.eval()
-        val_loss = 0.0
-        val_correct = 0
-        val_total = 0
-        
-        with torch.no_grad():
-            for inputs, labels in val_loader:
-                inputs = inputs.to(device)
-                labels = labels.to(device)
-                
-                weapon_preds, wound_preds = model(inputs)
-                loss_w = criterion_weapon(weapon_preds, labels)
-                
-                val_loss += loss_w.item() * inputs.size(0)
-                c, t = calculate_metrics(weapon_preds, labels)
-                val_correct += c
-                val_total += t
+        row = {
+            "epoch": epoch + 1,
+            "train_loss": train_loss,
+            "val_loss": val_loss,
+            **{f"val_{k}": v for k, v in val_m.items() if k != "weapon_confusion" and k != "wound_confusion"},
+        }
+        history.append(row)
+        print(
+            f"train_loss={train_loss:.4f} val_loss={val_loss:.4f} "
+            f"weapon_f1={val_m['weapon_f1']:.4f} wound_f1={val_m['wound_f1']:.4f}"
+        )
 
-        epoch_val_loss = val_loss / val_total
-        epoch_val_acc = val_correct / val_total
-        print(f"Val Loss: {epoch_val_loss:.4f} Acc: {epoch_val_acc:.4f}")
-
-        # Learning Rate Scheduling step based on metric
-        scheduler.step(epoch_val_acc)
-
-        # Early Stopping & Best Weights Logging
-        if epoch_val_acc > best_val_acc:
-            print(f"Validation Accuracy improved from {best_val_acc:.4f} to {epoch_val_acc:.4f}. Saving specific checkpoint.")
-            best_val_acc = epoch_val_acc
-            best_model_wts = copy.deepcopy(model.state_dict())
-            epochs_no_improve = 0
-            torch.save(model.state_dict(), 'best_forensic_model.pth')
+        if combined_f1 > best_score:
+            best_score = combined_f1
+            best_wts = copy.deepcopy(model.state_dict())
+            torch.save(best_wts, MODEL_WEIGHTS_PATH)
+            no_improve = 0
+            print(f"Saved checkpoint -> {MODEL_WEIGHTS_PATH}")
         else:
-            epochs_no_improve += 1
-            print(f"No improvement for {epochs_no_improve} epochs.")
-            if epochs_no_improve >= patience:
-                print("Early Stopping Triggered!")
+            no_improve += 1
+            if no_improve >= patience:
+                print("Early stopping.")
                 break
 
-    print("Training Complete. Loading best model weights.")
-    model.load_state_dict(best_model_wts)
-    print(f"Best Validation Accuracy achieved: {best_val_acc:.4f}")
+    model.load_state_dict(best_wts)
+    test_loss, test_m = run_epoch(model, test_loader, criterion_w, criterion_d)
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Forensic Weapon Architecture Model Trainer")
-    parser.add_argument('--dataset', type=str, default='dataset', help='Path to dataset directory')
-    parser.add_argument('--epochs', type=int, default=50, help='Max Number of Epochs')
-    parser.add_argument('--batch_size', type=int, default=32, help='Batch Size')
-    parser.add_argument('--lr', type=float, default=1e-4, help='Learning Rate')
-    
+    report = {
+        "model_architecture": "ResNet50+EfficientNetB0+MobileNetV2+DenseNet121",
+        "weapon_classes": WEAPON_CLASSES,
+        "wound_classes": WOUND_CLASSES,
+        "best_val_combined_f1": best_score,
+        "test_metrics": test_m,
+        "training_history": history,
+        "note": "Forensic models cannot guarantee 100% accuracy; use expert review for low-confidence cases.",
+    }
+    with open(METRICS_PATH, "w", encoding="utf-8") as f:
+        json.dump(report, f, indent=2)
+
+    print("\n=== Test metrics ===")
+    print(json.dumps({k: v for k, v in test_m.items() if "confusion" not in k}, indent=2))
+    print(f"Metrics saved to {METRICS_PATH}")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Forensic ensemble trainer")
+    parser.add_argument("--dataset", type=str, default=DEFAULT_DATASET)
+    parser.add_argument("--epochs", type=int, default=30)
+    parser.add_argument("--batch_size", type=int, default=16)
+    parser.add_argument("--lr", type=float, default=1e-4)
     args = parser.parse_args()
-    
-    print("=== Deep Learning Enhancements Pipeline ===")
-    print(f"Config: Epochs={args.epochs}, Batch={args.batch_size}, LR={args.lr}")
     train_model(args.dataset, args.epochs, args.batch_size, args.lr)

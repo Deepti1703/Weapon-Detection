@@ -77,52 +77,52 @@ const DoctorDashboard = () => {
 
  return (
  <div className="space-y-6">
- <div className="bg-white dark:bg-gray-900 dark:border-gray-700 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-6 flex items-start space-x-4">
- <div className="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-lg text-emerald-600 dark:text-emerald-400">
+ <div className="bg-white   rounded-xl shadow-sm border border-slate-200  p-6 flex items-start space-x-4">
+ <div className="bg-emerald-50  p-3 rounded-lg text-emerald-600 ">
  <FaStethoscope size={24} />
  </div>
  <div>
- <h2 className="text-xl font-bold text-slate-800 dark:text-gray-200 ">Medical Examiner Dashboard</h2>
+ <h2 className="text-xl font-bold text-slate-800  ">Medical Examiner Dashboard</h2>
  <p className="text-sm text-slate-500 mt-1">Review forensic wound analyses and provide clinical observations.</p>
  </div>
  </div>
 
  {selectedReport ? (
- <div className="bg-white dark:bg-gray-900 dark:border-gray-700 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 overflow-hidden animate-in fade-in zoom-in duration-300">
+ <div className="bg-white   rounded-xl shadow-sm border border-slate-200  overflow-hidden animate-in fade-in zoom-in duration-300">
  <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 /50">
- <h3 className="font-bold text-slate-800 dark:text-gray-200 flex items-center">
+ <h3 className="font-bold text-slate-800  flex items-center">
  <FaFileMedicalAlt className="mr-2 text-emerald-600" /> Case #{selectedReport.id} Details
  </h3>
- <button onClick={() => setSelectedReport(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+ <button onClick={() => setSelectedReport(null)} className="text-slate-400 hover:text-slate-600 ">
  <FaTimes size={20} />
  </button>
  </div>
  <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
  <div>
  {selectedReport.image_path ? (
- <img src={`http://127.0.0.1:8000${selectedReport.image_path}`} alt="Wound" className="w-full h-auto rounded-lg border border-slate-200 dark:border-gray-700 object-cover max-h-[300px]" />
+ <img src={`http://127.0.0.1:8000${selectedReport.image_path}`} alt="Wound" className="w-full h-auto rounded-lg border border-slate-200  object-cover max-h-[300px]" />
  ) : (
  <div className="h-[200px] bg-slate-100 rounded-lg flex items-center justify-center text-slate-400">
  <FaImage size={48} />
  </div>
  )}
  <div className="mt-4 grid grid-cols-2 gap-4">
- <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 dark:border-gray-700 ">
+ <div className="bg-slate-50 p-3 rounded-lg border border-slate-200  ">
  <span className="text-xs font-bold text-slate-400 uppercase block mb-1">Predicted Weapon</span>
- <span className="font-bold text-slate-800 dark:text-gray-200 ">{selectedReport.predicted_weapon}</span>
+ <span className="font-bold text-slate-800  ">{selectedReport.predicted_weapon}</span>
  </div>
- <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 dark:border-gray-700 ">
+ <div className="bg-slate-50 p-3 rounded-lg border border-slate-200  ">
  <span className="text-xs font-bold text-slate-400 uppercase block mb-1">Wound Type</span>
- <span className="font-bold text-slate-800 dark:text-gray-200 ">{selectedReport.predicted_wound_type}</span>
+ <span className="font-bold text-slate-800  ">{selectedReport.predicted_wound_type}</span>
  </div>
  </div>
  </div>
  <div className="flex flex-col h-full">
- <label className="text-sm font-bold text-slate-700 dark:text-gray-300 mb-2 flex items-center">
+ <label className="text-sm font-bold text-slate-700  mb-2 flex items-center">
  <FaNotesMedical className="mr-2 text-emerald-600" /> Clinical Observations & Doctor's Notes
  </label>
  <textarea
- className="w-full flex-1 p-3 rounded-xl border border-slate-300 dark:border-gray-600 bg-slate-50 text-slate-800 dark:text-gray-200 min-h-[200px] outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow"
+ className="w-full flex-1 p-3 rounded-xl border border-slate-300  bg-slate-50 text-slate-800  min-h-[200px] outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow"
  placeholder="Enter your professional medical observations, discrepancies with algorithmic predictions, or formal case notes here..."
  value={notes}
  onChange={(e) => setNotes(e.target.value)}
@@ -138,7 +138,7 @@ const DoctorDashboard = () => {
  </div>
  </div>
  ) : (
- <div className="bg-white dark:bg-gray-900 dark:border-gray-700 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 overflow-hidden">
+ <div className="bg-white   rounded-xl shadow-sm border border-slate-200  overflow-hidden">
  <table className="w-full text-left">
  <thead className="bg-slate-50 /50 border-b border-slate-100 text-xs uppercase text-slate-500 font-bold">
  <tr>
@@ -149,31 +149,31 @@ const DoctorDashboard = () => {
  <th className="px-6 py-4 text-right">Action</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-slate-100 dark:divide-slate-700 text-sm">
+ <tbody className="divide-y divide-slate-100  text-sm">
  {loading ? (
  <tr><td colSpan="5" className="text-center py-12 text-slate-400"><div className="animate-spin w-6 h-6 border-2 border-emerald-500 border-t-transparent flex mx-auto rounded-full mb-2"></div>Loading cases...</td></tr>
  ) : reports.length === 0 ? (
  <tr><td colSpan="5" className="text-center py-12 text-slate-500 bg-slate-50/50 ">No cases available for review.</td></tr>
  ) : (
  reports.map(r => (
- <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
- <td className="px-6 py-3 font-bold text-slate-800 dark:text-gray-200 ">#{r.id}</td>
+ <tr key={r.id} className="hover:bg-slate-50  transition-colors">
+ <td className="px-6 py-3 font-bold text-slate-800  ">#{r.id}</td>
  <td className="px-6 py-3 text-slate-600 ">{new Date(r.timestamp).toLocaleDateString()}</td>
  <td className="px-6 py-3">
- <div className="font-medium text-slate-800 dark:text-gray-200 ">{r.predicted_weapon}</div>
+ <div className="font-medium text-slate-800  ">{r.predicted_weapon}</div>
  <div className="text-xs text-slate-500">{r.predicted_wound_type}</div>
  </td>
  <td className="px-6 py-3">
  {r.doctor_notes ? (
- <span className="text-emerald-600 dark:text-emerald-400 font-medium text-xs flex items-center bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded w-fit"><FaCheckCircle className="mr-1" /> Documented</span>
+ <span className="text-emerald-600  font-medium text-xs flex items-center bg-emerald-50  px-2 py-1 rounded w-fit"><FaCheckCircle className="mr-1" /> Documented</span>
  ) : (
- <span className="text-amber-600 dark:text-amber-400 font-medium text-xs flex items-center bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded w-fit">Pending Review</span>
+ <span className="text-amber-600  font-medium text-xs flex items-center bg-amber-50  px-2 py-1 rounded w-fit">Pending Review</span>
  )}
  </td>
  <td className="px-6 py-3 text-right">
  <button
  onClick={() => { setSelectedReport(r); setNotes(r.doctor_notes || ''); }}
- className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 font-bold px-3 py-1.5 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-colors text-xs uppercase"
+ className="text-emerald-600  hover:text-emerald-800 font-bold px-3 py-1.5 border border-emerald-200  hover:bg-emerald-50  rounded-lg transition-colors text-xs uppercase"
  >
  Review Case
  </button>

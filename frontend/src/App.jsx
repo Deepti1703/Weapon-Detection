@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import ProfileSetup from './pages/ProfileSetup';
 import AdminDashboard from './pages/AdminDashboard';
+import Report from './pages/Report';
 
 const ProtectedRoute = ({ children }) => {
  const { user, loading } = useAuth();
@@ -52,6 +53,14 @@ function App() {
  element={
  <ProtectedRoute>
  <Dashboard />
+ </ProtectedRoute>
+ }
+ />
+ <Route
+ path="/report"
+ element={
+ <ProtectedRoute>
+ <Report />
  </ProtectedRoute>
  }
  />

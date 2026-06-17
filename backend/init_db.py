@@ -19,15 +19,20 @@ if not admin:
     print("Creating admin user 'deepti'...")
     admin = User(
         username="deepti",
-        hashed_password=auth.get_password_hash("Sharada@1703"),
+        email="deepti@example.com",
+        hashed_password=auth.get_password_hash("admin123"),
         role="super_admin",
         is_profile_complete=True,
         name="Deepti Admin"
     )
     db.add(admin)
     db.commit()
-    print("Admin user created (username: deepti, password: Sharada@1703)")
+    print("Admin user created (username: deepti, password: admin123)")
 else:
-    print("Admin user already exists.")
+    admin.email = "deepti@example.com"
+    admin.hashed_password = auth.get_password_hash("admin123")
+    admin.role = "super_admin"
+    db.commit()
+    print("Admin user verified/updated (username: deepti, password: admin123)")
 
 db.close()

@@ -83,26 +83,26 @@ const ProfileSetup = () => {
  };
 
  return (
- <div className="min-h-screen bg-background dark:bg-dark-background flex items-center justify-center p-6 relative overflow-hidden transition-colors duration-300">
+ <div className="min-h-screen bg-background  flex items-center justify-center p-6 relative overflow-hidden transition-colors duration-300">
  {/* Decorative background elements */}
  <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-primary/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70"></div>
 
- <div className="glass-panel p-8 md:p-10 rounded-2xl w-full max-w-2xl z-10 shadow-lg border border-border dark:border-dark-border bg-card dark:bg-dark-card">
- <div className="mb-8 text-center border-b border-border dark:border-dark-border pb-6">
- <div className="mx-auto bg-secondary dark:bg-dark-secondary w-16 h-16 flex items-center justify-center rounded-full text-primary mb-4">
+ <div className="glass-panel p-8 md:p-10 rounded-2xl w-full max-w-2xl z-10 shadow-lg border border-border  bg-card ">
+ <div className="mb-8 text-center border-b border-border  pb-6">
+ <div className="mx-auto bg-secondary  w-16 h-16 flex items-center justify-center rounded-full text-primary mb-4">
  <FaIdCard size={32} />
  </div>
- <h1 className="text-2xl font-bold text-text dark:text-dark-text tracking-tight">
+ <h1 className="text-2xl font-bold text-text  tracking-tight">
  {isRecovery ? 'Secure Password Recovery' : 'Complete Your Profile'}
  </h1>
- <p className="text-muted dark:text-dark-muted mt-2 text-sm">
- Welcome{isRecovery ? ' back' : ''}, <span className="font-semibold text-text dark:text-dark-text">{user?.name}</span>.
+ <p className="text-muted  mt-2 text-sm">
+ Welcome{isRecovery ? ' back' : ''}, <span className="font-semibold text-text ">{user?.name}</span>.
  {isRecovery ? ' Please set a new secure password for your account to regain access.' : ' Please set up your credentials and personal details before accessing the system.'}
  </p>
  </div>
 
  {error && (
- <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 text-red-700 dark:text-red-300 text-sm font-medium rounded-r">
+ <div className="mb-6 p-4 bg-red-50  border-l-4 border-red-500 text-red-700  text-sm font-medium rounded-r">
  {error}
  </div>
  )}
@@ -111,21 +111,21 @@ const ProfileSetup = () => {
  <div className={`grid grid-cols-1 ${!isRecovery ? 'md:grid-cols-2 gap-6' : ''} relative`}>
 
  {/* Security Section */}
- <div className={`space-y-4 ${!isRecovery ? 'md:border-r border-border dark:border-dark-border md:pr-6' : ''}`}>
- <h3 className="text-sm font-bold text-text dark:text-dark-text uppercase tracking-wider flex items-center mb-4"><FaUserCircle className="mr-2" /> Security</h3>
+ <div className={`space-y-4 ${!isRecovery ? 'md:border-r border-border  md:pr-6' : ''}`}>
+ <h3 className="text-sm font-bold text-text  uppercase tracking-wider flex items-center mb-4"><FaUserCircle className="mr-2" /> Security</h3>
  <div>
- <label className="block text-xs font-semibold text-text dark:text-dark-text mb-1">Set New Password</label>
+ <label className="block text-xs font-semibold text-text  mb-1">Set New Password</label>
  <input
  type="password" name="password" required value={formData.password} onChange={handleChange}
- className="w-full px-3 py-2 text-sm rounded-lg border border-border dark:border-dark-border bg-card dark:bg-dark-card text-text dark:text-dark-text focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder-muted"
+ className="w-full px-3 py-2 text-sm rounded-lg border border-border  bg-card  text-text  focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder-muted"
  placeholder="Minimum 8 characters"
  />
  </div>
  <div>
- <label className="block text-xs font-semibold text-text dark:text-dark-text mb-1">Confirm Password</label>
+ <label className="block text-xs font-semibold text-text  mb-1">Confirm Password</label>
  <input
  type="password" name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange}
- className="w-full px-3 py-2 text-sm rounded-lg border border-border dark:border-dark-border bg-card dark:bg-dark-card text-text dark:text-dark-text focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder-muted"
+ className="w-full px-3 py-2 text-sm rounded-lg border border-border  bg-card  text-text  focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder-muted"
  placeholder="Repeat password"
  />
  </div>
@@ -134,21 +134,21 @@ const ProfileSetup = () => {
  {/* Personal Details Section */}
  {!isRecovery && (
  <div className="space-y-4 md:pl-2">
- <h3 className="text-sm font-bold text-text dark:text-dark-text uppercase tracking-wider flex items-center mb-4"><FaInfoCircle className="mr-2" /> Personal Details</h3>
+ <h3 className="text-sm font-bold text-text  uppercase tracking-wider flex items-center mb-4"><FaInfoCircle className="mr-2" /> Personal Details</h3>
 
  <div className="grid grid-cols-2 gap-4">
  <div>
- <label className="block text-xs font-semibold text-text dark:text-dark-text mb-1">Date of Birth</label>
+ <label className="block text-xs font-semibold text-text  mb-1">Date of Birth</label>
  <input
  type="date" name="dob" required value={formData.dob} onChange={handleChange}
- className="w-full px-3 py-2 text-sm rounded-lg border border-border dark:border-dark-border bg-card dark:bg-dark-card text-text dark:text-dark-text focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+ className="w-full px-3 py-2 text-sm rounded-lg border border-border  bg-card  text-text  focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
  />
  </div>
  <div>
- <label className="block text-xs font-semibold text-text dark:text-dark-text mb-1">Gender</label>
+ <label className="block text-xs font-semibold text-text  mb-1">Gender</label>
  <select
  name="gender" value={formData.gender} onChange={handleChange}
- className="w-full px-3 py-2 text-sm rounded-lg border border-border dark:border-dark-border bg-card dark:bg-dark-card text-text dark:text-dark-text focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+ className="w-full px-3 py-2 text-sm rounded-lg border border-border  bg-card  text-text  focus:ring-2 focus:ring-primary focus:border-primary outline-none"
  >
  <option value="Male">Male</option>
  <option value="Female">Female</option>
@@ -159,28 +159,28 @@ const ProfileSetup = () => {
  </div>
 
  <div>
- <label className="block text-xs font-semibold text-text dark:text-dark-text mb-1 flex items-center"><FaGraduationCap className="mr-1" /> Highest Education</label>
+ <label className="block text-xs font-semibold text-text  mb-1 flex items-center"><FaGraduationCap className="mr-1" /> Highest Education</label>
  <input
  type="text" name="education" required value={formData.education} onChange={handleChange}
- className="w-full px-3 py-2 text-sm rounded-lg border border-border dark:border-dark-border bg-card dark:bg-dark-card text-text dark:text-dark-text focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder-muted"
+ className="w-full px-3 py-2 text-sm rounded-lg border border-border  bg-card  text-text  focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder-muted"
  placeholder="e.g. M.Sc. Forensic Science"
  />
  </div>
 
  <div>
- <label className="block text-xs font-semibold text-text dark:text-dark-text mb-1">Short Bio / Expertise</label>
+ <label className="block text-xs font-semibold text-text  mb-1">Short Bio / Expertise</label>
  <textarea
  name="bio" rows="2" required value={formData.bio} onChange={handleChange}
- className="w-full px-3 py-2 text-sm rounded-lg border border-border dark:border-dark-border bg-card dark:bg-dark-card text-text dark:text-dark-text focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all resize-none placeholder-muted"
+ className="w-full px-3 py-2 text-sm rounded-lg border border-border  bg-card  text-text  focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all resize-none placeholder-muted"
  placeholder="Brief description of your role..."
  ></textarea>
  </div>
 
  <div>
- <label className="block text-xs font-semibold text-text dark:text-dark-text mb-1">Photo URL (Optional)</label>
+ <label className="block text-xs font-semibold text-text  mb-1">Photo URL (Optional)</label>
  <input
  type="text" name="photo" value={formData.photo} onChange={handleChange}
- className="w-full px-3 py-2 text-sm rounded-lg border border-border dark:border-dark-border bg-card dark:bg-dark-card text-text dark:text-dark-text focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder-muted"
+ className="w-full px-3 py-2 text-sm rounded-lg border border-border  bg-card  text-text  focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder-muted"
  placeholder="https://..."
  />
  </div>
@@ -190,14 +190,14 @@ const ProfileSetup = () => {
  </div>
 
  {!isRecovery && (
- <div className="border-t border-border dark:border-dark-border pt-6 mt-6 pb-2">
- <h3 className="text-sm font-bold text-text dark:text-dark-text uppercase tracking-wider flex items-center mb-4"><FaIdCard className="mr-2" /> Mandatory ID Verification</h3>
+ <div className="border-t border-border  pt-6 mt-6 pb-2">
+ <h3 className="text-sm font-bold text-text  uppercase tracking-wider flex items-center mb-4"><FaIdCard className="mr-2" /> Mandatory ID Verification</h3>
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  <div>
- <label className="block text-xs font-semibold text-text dark:text-dark-text mb-1">Document Type</label>
+ <label className="block text-xs font-semibold text-text  mb-1">Document Type</label>
  <select
  name="idType" value={formData.idType} onChange={handleChange}
- className="w-full px-3 py-2 text-sm rounded-lg border border-border dark:border-dark-border bg-card dark:bg-dark-card text-text dark:text-dark-text focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+ className="w-full px-3 py-2 text-sm rounded-lg border border-border  bg-card  text-text  focus:ring-2 focus:ring-primary focus:border-primary outline-none"
  >
  <option value="Aadhaar">Aadhaar Card</option>
  <option value="Passport">Passport</option>
@@ -206,7 +206,7 @@ const ProfileSetup = () => {
  </select>
  </div>
  <div>
- <label className="block text-xs font-semibold text-text dark:text-dark-text mb-1">Upload Document Image</label>
+ <label className="block text-xs font-semibold text-text  mb-1">Upload Document Image</label>
  <div className="relative">
  <input
  type="file"
@@ -215,7 +215,7 @@ const ProfileSetup = () => {
  className="hidden"
  id="id-upload"
  />
- <label htmlFor="id-upload" className="w-full flex items-center px-3 py-2 text-sm rounded-lg border border-dashed border-primary/50 hover:border-primary bg-primary/5 text-text dark:text-dark-text cursor-pointer transition-colors">
+ <label htmlFor="id-upload" className="w-full flex items-center px-3 py-2 text-sm rounded-lg border border-dashed border-primary/50 hover:border-primary bg-primary/5 text-text  cursor-pointer transition-colors">
  <FaFileUpload className="mr-2 text-primary" />
  {idFile ? idFile.name : 'Choose File to Upload'}
  </label>
@@ -225,7 +225,7 @@ const ProfileSetup = () => {
  </div>
  )}
 
- <div className="border-t border-border dark:border-dark-border mt-2">
+ <div className="border-t border-border  mt-2">
  <button
  type="submit"
  disabled={loading}

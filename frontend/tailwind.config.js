@@ -1,6 +1,5 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-    darkMode: 'class', // Use class-based dark mode
     content: [
         "./index.html",
         "./src/**/*.{js,ts,jsx,tsx}",
@@ -8,25 +7,17 @@ export default {
     theme: {
         extend: {
             colors: {
-                // Light theme colors (default)
-                background: "#F9FAFB",      // Light gray background
+                // Fixed professional White-Red palette
+                background: "#FFFFFF",      // Pure white background
                 card: "#FFFFFF",            // White cards
-                secondary: "#F3F4F6",       // Light gray secondary
+                secondary: "#F9FAFB",       // Soft off-white secondary panels
                 text: "#111827",            // Dark text
-                muted: "#6B7280",           // Gray muted text
+                muted: "#4B5563",           // Gray muted text
                 border: "#E5E7EB",          // Light borders
 
-                // Dark theme colors (with dark: prefix) - STRICT BLACK/GRAY/RED ONLY
-                "dark-background": "#0b0f19",    // Background main
-                "dark-card": "#111827",          // Cards
-                "dark-secondary": "#1f2937",     // Inputs
-                "dark-text": "#e5e7eb",          // pure white per requirements
-                "dark-muted": "#9CA3AF",         // Gray muted (gray-400)
-                "dark-border": "#374151",        // Dark borders (gray-700)
-
                 // Forensic color scheme - NO BLUE, NO PURPLE
-                primary: "#991B1B",              // Cherry red (primary actions)
-                "primary-hover": "#7F1D1D",      // Darker red hover
+                primary: "#DC2626",              // Professional red (primary actions)
+                "primary-hover": "#B91C1C",      // Darker red hover
                 accent: "#DC2626",               // Bright red accent
                 "accent-light": "#EF4444",       // Lighter red for highlights
 

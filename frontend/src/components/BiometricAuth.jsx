@@ -56,8 +56,8 @@ const BiometricAuth = ({ onVerify, onCancel, username, isRegistration }) => {
 
  return (
  <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm print:hidden">
- <div className="bg-card dark:bg-dark-card rounded-xl max-w-md w-full overflow-hidden border border-border dark:border-dark-border shadow-2xl transition-colors duration-300">
- <div className="p-6 text-center text-text dark:text-dark-text">
+ <div className="bg-card  rounded-xl max-w-md w-full overflow-hidden border border-border  shadow-2xl transition-colors duration-300">
+ <div className="p-6 text-center text-text ">
  <h2 className="text-2xl font-bold mb-2 flex justify-center items-center gap-2">
  <FaCamera className="text-primary" /> {isRegistration ? 'Register Face Identity' : 'Face Authentication'}
  </h2>
@@ -65,10 +65,10 @@ const BiometricAuth = ({ onVerify, onCancel, username, isRegistration }) => {
  {isScanning ? (
  <p className="text-red-300 font-semibold mb-6 animate-pulse text-lg">{livenessPrompt}</p>
  ) : (
- <p className="text-muted dark:text-dark-muted mb-6 text-sm">{isRegistration ? 'Capture multiple angles to securely register your identity.' : 'Capture live movement prompts for strict face verification.'}</p>
+ <p className="text-muted  mb-6 text-sm">{isRegistration ? 'Capture multiple angles to securely register your identity.' : 'Capture live movement prompts for strict face verification.'}</p>
  )}
 
- <div className="relative mx-auto w-64 h-64 rounded-full overflow-hidden border-4 border-primary mb-6 bg-secondary dark:bg-dark-secondary shadow-[0_0_30px_rgba(220,38,38,0.3)] transition-colors duration-300">
+ <div className="relative mx-auto w-64 h-64 rounded-full overflow-hidden border-4 border-primary mb-6 bg-secondary  shadow-[0_0_30px_rgba(220,38,38,0.3)] transition-colors duration-300">
  <Webcam
  audio={false}
  ref={webcamRef}
@@ -111,7 +111,7 @@ const BiometricAuth = ({ onVerify, onCancel, username, isRegistration }) => {
  <button
  onClick={onCancel}
  disabled={isScanning}
- className="flex-1 py-3 px-4 bg-secondary dark:bg-dark-secondary text-text dark:text-dark-text rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition disabled:opacity-50 border border-border dark:border-dark-border"
+ className="flex-1 py-3 px-4 bg-secondary  text-text  rounded-lg hover:bg-gray-200  transition disabled:opacity-50 border border-border "
  >
  Cancel
  </button>
