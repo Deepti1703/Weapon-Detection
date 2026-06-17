@@ -31,7 +31,7 @@ const AdminDashboard = () => {
   // Fetch System Configurations
   const fetchConfig = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:8000/api/admin/system-config', { headers: authHeaders() });
+      const response = await axios.get(`${window.API_BASE}/api/admin/system-config`, { headers: authHeaders() });
       setConfigForm(response.data);
     } catch (err) {
       console.error(err);
@@ -44,7 +44,7 @@ const AdminDashboard = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.put('http://127.0.0.1:8000/api/admin/system-config', configForm, { headers: authHeaders() });
+      await axios.put(`${window.API_BASE}/api/admin/system-config`, configForm, { headers: authHeaders() });
       toast.success("System configurations updated successfully.");
       fetchAuditLogs();
     } catch (err) {
@@ -58,7 +58,7 @@ const AdminDashboard = () => {
   // Fetch Audit Logs
   const fetchAuditLogs = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:8000/api/admin/audit-logs', { headers: authHeaders() });
+      const response = await axios.get(`${window.API_BASE}/api/admin/audit-logs`, { headers: authHeaders() });
       setAuditLogs(response.data);
     } catch (err) {
       console.error(err);
@@ -68,7 +68,7 @@ const AdminDashboard = () => {
   // Fetch Backups
   const fetchBackups = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:8000/api/admin/backups', { headers: authHeaders() });
+      const response = await axios.get(`${window.API_BASE}/api/admin/backups`, { headers: authHeaders() });
       setBackups(response.data);
     } catch (err) {
       console.error(err);
@@ -78,7 +78,7 @@ const AdminDashboard = () => {
   // Fetch Stats (Database row counts + system monitoring info)
   const fetchStats = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:8000/api/admin/system-stats', { headers: authHeaders() });
+      const response = await axios.get(`${window.API_BASE}/api/admin/system-stats`, { headers: authHeaders() });
       setStats(response.data);
     } catch (err) {
       console.error(err);
@@ -89,7 +89,7 @@ const AdminDashboard = () => {
   const handleCreateBackup = async () => {
     setLoading(true);
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/admin/backup', {}, { headers: authHeaders() });
+      const response = await axios.post(`${window.API_BASE}/api/admin/backup`, {}, { headers: authHeaders() });
       toast.success(response.data.message || "Database backup created.");
       fetchBackups();
       fetchStats();
@@ -107,7 +107,7 @@ const AdminDashboard = () => {
     if (!window.confirm(`Are you sure you want to restore the system database from backup: ${filename}? Current records will be replaced.`)) return;
     setLoading(true);
     try {
-      const response = await axios.post(`http://127.0.0.1:8000/api/admin/restore/${filename}`, {}, { headers: authHeaders() });
+      const response = await axios.post(`${window.API_BASE}/api/admin/restore/${filename}`, {}, { headers: authHeaders() });
       toast.success(response.data.message || "Database restored successfully.");
       fetchStats();
       fetchAuditLogs();

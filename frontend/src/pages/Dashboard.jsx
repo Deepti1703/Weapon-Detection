@@ -64,7 +64,7 @@ const Dashboard = () => {
   const loadDashboardSummary = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://127.0.0.1:8000/api/dashboard/summary', {
+      const response = await axios.get(`${window.API_BASE}/api/dashboard/summary`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       setDashboardStats(response.data.stats);
@@ -164,7 +164,7 @@ const Dashboard = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://127.0.0.1:8000/api/analyze', formData, {
+      const response = await axios.post(`${window.API_BASE}/api/analyze`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`
@@ -188,7 +188,7 @@ const Dashboard = () => {
     if (!analysisResult) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://127.0.0.1:8000/api/verified-training/correct', {
+      await axios.post(`${window.API_BASE}/api/verified-training/correct`, {
         prediction_id: analysisResult.prediction_id,
         record_id: analysisResult.record_id
       }, {
@@ -208,7 +208,7 @@ const Dashboard = () => {
     if (!analysisResult) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://127.0.0.1:8000/api/verified-training/incorrect', {
+      await axios.post(`${window.API_BASE}/api/verified-training/incorrect`, {
         prediction_id: analysisResult.prediction_id,
         record_id: analysisResult.record_id,
         actual_weapon: actualWeapon,
@@ -230,7 +230,7 @@ const Dashboard = () => {
  if (!downloadUrl) return;
  try {
  const token = localStorage.getItem('token');
- const response = await axios.get(`http://127.0.0.1:8000${downloadUrl}`, {
+ const response = await axios.get(`${window.API_BASE}${downloadUrl}`, {
  headers: { 'Authorization': `Bearer ${token}` },
  responseType: 'blob'
  });
@@ -257,7 +257,7 @@ const Dashboard = () => {
       if (filterWoundCategory) params.wound_category = filterWoundCategory;
       if (filterDate) params.date = filterDate;
 
-      const response = await axios.get('http://127.0.0.1:8000/api/cases', {
+      const response = await axios.get(`${window.API_BASE}/api/cases`, {
         headers: { 'Authorization': `Bearer ${token}` },
         params: params
       });
@@ -281,7 +281,7 @@ const Dashboard = () => {
     if (!window.confirm("Are you sure you want to permanently delete this case?")) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://127.0.0.1:8000/api/cases/${caseId}`, {
+      await axios.delete(`${window.API_BASE}/api/cases/${caseId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       toast.success("Case deleted successfully.");
@@ -306,14 +306,14 @@ const Dashboard = () => {
     try {
       const token = localStorage.getItem('token');
       toast.info("Running CNN models for case re-analysis...");
-      await axios.post(`http://127.0.0.1:8000/api/cases/${caseId}/reanalyze`, {}, {
+      await axios.post(`${window.API_BASE}/api/cases/${caseId}/reanalyze`, {}, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       toast.success("Re-analysis completed successfully.");
       loadHistory();
       
       // Load updated report details directly from DB
-      const reportResponse = await axios.get(`http://127.0.0.1:8000/api/cases/${caseId}`, {
+      const reportResponse = await axios.get(`${window.API_BASE}/api/cases/${caseId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       setAnalysisResult(reportResponse.data);
@@ -341,7 +341,7 @@ const Dashboard = () => {
     toast.info("Generating secure PDF report export...");
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`http://127.0.0.1:8000/api/cases/${caseId}/export`, {
+      const response = await axios.get(`${window.API_BASE}/api/cases/${caseId}/export`, {
         headers: { 'Authorization': `Bearer ${token}` },
         responseType: 'blob'
       });
@@ -374,7 +374,7 @@ const Dashboard = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`http://127.0.0.1:8000/api/cases/${caseId}`, {
+      const response = await axios.get(`${window.API_BASE}/api/cases/${caseId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       setAnalysisResult(response.data);
@@ -412,7 +412,7 @@ const Dashboard = () => {
  } else {
  payload.age = parseInt(payload.age, 10);
  }
- const response = await axios.put('http://127.0.0.1:8000/api/me', payload, {
+ const response = await axios.put(`${window.API_BASE}/api/me`, payload, {
  headers: { 'Authorization': `Bearer ${token}` }
  });
  updateUser(response.data.user);

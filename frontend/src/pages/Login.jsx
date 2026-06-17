@@ -67,11 +67,11 @@ const Login = () => {
  e.preventDefault();
  setLoading(true);
  try {
- const response = await axios.post('http://127.0.0.1:8000/api/login', {
+ const response = await axios.post(`${window.API_BASE}/api/login`, {
  username: loginUsername, password: loginPassword
  });
  const { access_token } = response.data;
- const userResponse = await axios.get('http://127.0.0.1:8000/api/me', {
+ const userResponse = await axios.get(`${window.API_BASE}/api/me`, {
  headers: { Authorization: `Bearer ${access_token}` }
  });
 
@@ -93,13 +93,13 @@ const Login = () => {
  const handleBiometricLogin = async (data) => {
  setLoading(true); setShowBiometric(false);
  try {
- const response = await axios.post('http://127.0.0.1:8000/api/login/biometric', {
+ const response = await axios.post(`${window.API_BASE}/api/login/biometric`, {
  username: data.username,
  face_data: data.face_data || null,
  face_frames: data.face_frames || []
  });
  const { access_token } = response.data;
- const userResponse = await axios.get('http://127.0.0.1:8000/api/me', {
+ const userResponse = await axios.get(`${window.API_BASE}/api/me`, {
  headers: { Authorization: `Bearer ${access_token}` }
  });
  login(userResponse.data, access_token);
@@ -115,7 +115,7 @@ const Login = () => {
  e.preventDefault();
  setLoading(true);
  try {
- const response = await axios.post('http://127.0.0.1:8000/api/forgot-password', {
+ const response = await axios.post(`${window.API_BASE}/api/forgot-password`, {
  username: loginUsername, email: recoveryEmail
  });
  setRecoverySuccess(response.data.temporary_password);
@@ -142,9 +142,9 @@ const Login = () => {
  setLoading(true);
  try {
  // Trigger Email OTP
- await axios.post('http://127.0.0.1:8000/api/auth/send-otp', { identifier: regData.email });
+ await axios.post(`${window.API_BASE}/api/auth/send-otp`, { identifier: regData.email });
  // Trigger Phone OTP
- await axios.post('http://127.0.0.1:8000/api/auth/send-otp', { identifier: regData.phone });
+ await axios.post(`${window.API_BASE}/api/auth/send-otp`, { identifier: regData.phone });
 
  toast.success("OTP sent successfully");
  setRegStep(2);
@@ -157,7 +157,7 @@ const Login = () => {
  e.preventDefault();
  setLoading(true);
  try {
- const response = await axios.post('http://127.0.0.1:8000/api/register', {
+ const response = await axios.post(`${window.API_BASE}/api/register`, {
  ...regData,
  face_data: faceData,
  role: 'forensic_analyst',
@@ -165,7 +165,7 @@ const Login = () => {
  phone_otp: otpData.phone_otp
  });
  const { access_token } = response.data;
- const userResponse = await axios.get('http://127.0.0.1:8000/api/me', {
+ const userResponse = await axios.get(`${window.API_BASE}/api/me`, {
  headers: { Authorization: `Bearer ${access_token}` }
  });
  login(userResponse.data, access_token);

@@ -23,14 +23,14 @@ const DoctorDashboard = () => {
  const token = localStorage.getItem('token');
  // Depending on the backend route, it might be /api/doctor/reports or /api/history for all
  // Fallback to /api/history if doctor endpoint is missing
- let url = 'http://127.0.0.1:8000/api/doctor/reports';
+ let url = `${window.API_BASE}/api/doctor/reports`;
  let response;
  try {
  response = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } });
  } catch (err) {
  // If 404, fallback to an admin-level history fetch if possible, or history
  if (err.response && err.response.status === 404) {
- url = 'http://127.0.0.1:8000/api/history';
+ url = `${window.API_BASE}/api/history`;
  response = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } });
  } else {
  throw err;
@@ -50,7 +50,7 @@ const DoctorDashboard = () => {
  setSaving(true);
  try {
  const token = localStorage.getItem('token');
- await axios.post(`http://127.0.0.1:8000/api/doctor/reports/${selectedReport.id}/notes`,
+ await axios.post(`${window.API_BASE}/api/doctor/reports/${selectedReport.id}/notes`,
  { notes },
  { headers: { Authorization: `Bearer ${token}` } }
  );
@@ -100,7 +100,7 @@ const DoctorDashboard = () => {
  <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
  <div>
  {selectedReport.image_path ? (
- <img src={`http://127.0.0.1:8000${selectedReport.image_path}`} alt="Wound" className="w-full h-auto rounded-lg border border-slate-200  object-cover max-h-[300px]" />
+ <img src={`${window.API_BASE}${selectedReport.image_path}`} alt="Wound" className="w-full h-auto rounded-lg border border-slate-200  object-cover max-h-[300px]" />
  ) : (
  <div className="h-[200px] bg-slate-100 rounded-lg flex items-center justify-center text-slate-400">
  <FaImage size={48} />
