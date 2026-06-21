@@ -859,7 +859,8 @@ def admin_update_system_config(req: SystemConfigReq, current_user: User = Depend
 @app.post("/api/profile/setup")
 def setup_profile(req: ProfileSetupReq, current_user: User = Depends(auth.get_current_user), db: Session = Depends(get_db)):
     if current_user.is_profile_complete:
-        raise HTTPException(status_code=400, detail="Profile is already set up.")
+        # Idempotent: allow re-submission/corrections during setup flow
+        print(f"[PROFILE SETUP] Profile already completed for user {current_user.username}. Updating fields idempotently.")
         
     current_user.hashed_password = auth.get_password_hash(req.password)
     

@@ -55,7 +55,7 @@ const ProfileSetup = () => {
  payload.gender = formData.gender;
  }
 
- await axios.post('http://localhost:8000/api/profile/setup', payload, {
+ await axios.post(`${window.API_BASE}/api/profile/setup`, payload, {
  headers: { Authorization: `Bearer ${token}` }
  });
 
@@ -63,7 +63,7 @@ const ProfileSetup = () => {
  const idFormData = new FormData();
  idFormData.append('document_type', formData.idType);
  idFormData.append('file', idFile);
- await axios.post('http://localhost:8000/api/id-verification/upload', idFormData, {
+ await axios.post(`${window.API_BASE}/api/id-verification/upload`, idFormData, {
  headers: {
  'Content-Type': 'multipart/form-data',
  Authorization: `Bearer ${token}`
