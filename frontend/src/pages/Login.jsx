@@ -63,53 +63,61 @@ const Login = () => {
    setLoginPassword('');
  }, [activeTab]);
 
- const handleLogin = async (e) => {
- e.preventDefault();
- setLoading(true);
- try {
- const response = await axios.post(`${window.API_BASE}/api/login`, {
- username: loginUsername, password: loginPassword
- });
- const { access_token } = response.data;
- const userResponse = await axios.get(`${window.API_BASE}/api/me`, {
- headers: { Authorization: `Bearer ${access_token}` }
- });
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    console.log("[LOGIN DEBUG] Request payload:", { username: loginUsername, password: loginPassword });
+    try {
+      const response = await axios.post(`${window.API_BASE}/api/login`, {
+        username: loginUsername, password: loginPassword
+      });
+      console.log("[LOGIN DEBUG] Response data:", response.data);
+      const { access_token } = response.data;
+      const userResponse = await axios.get(`${window.API_BASE}/api/me`, {
+        headers: { Authorization: `Bearer ${access_token}` }
+      });
+      console.log("[LOGIN DEBUG] User details response:", userResponse.data);
 
- if (rememberMe) {
-   localStorage.setItem('remembered_username', loginUsername);
- } else {
-   localStorage.removeItem('remembered_username');
- }
+      if (rememberMe) {
+        localStorage.setItem('remembered_username', loginUsername);
+      } else {
+        localStorage.removeItem('remembered_username');
+      }
 
- login(userResponse.data, access_token);
- if (!userResponse.data.is_profile_complete) navigate('/setup');
- else navigate('/');
- toast.success("Successfully logged in.");
- } catch (err) {
- toast.error(err.response?.data?.detail || 'Invalid credentials or unauthorized access.');
- } finally { setLoading(false); }
- };
+      login(userResponse.data, access_token);
+      if (!userResponse.data.is_profile_complete) navigate('/setup');
+      else navigate('/');
+      toast.success("Successfully logged in.");
+    } catch (err) {
+      console.error("[LOGIN DEBUG] Login error:", err.response?.data || err.message);
+      toast.error(err.response?.data?.detail || 'Invalid credentials or unauthorized access.');
+    } finally { setLoading(false); }
+  };
 
- const handleBiometricLogin = async (data) => {
- setLoading(true); setShowBiometric(false);
- try {
- const response = await axios.post(`${window.API_BASE}/api/login/biometric`, {
- username: data.username,
- face_data: data.face_data || null,
- face_frames: data.face_frames || []
- });
- const { access_token } = response.data;
- const userResponse = await axios.get(`${window.API_BASE}/api/me`, {
- headers: { Authorization: `Bearer ${access_token}` }
- });
- login(userResponse.data, access_token);
- if (!userResponse.data.is_profile_complete) navigate('/setup');
- else navigate('/');
- toast.success("Biometric authentication successful.");
- } catch (err) {
- toast.error(err.response?.data?.detail || 'Biometric authentication failed.');
- } finally { setLoading(false); }
- };
+  const handleBiometricLogin = async (data) => {
+    setLoading(true); setShowBiometric(false);
+    console.log("[BIOMETRIC DEBUG] Request payload for username:", data.username);
+    try {
+      const response = await axios.post(`${window.API_BASE}/api/login/biometric`, {
+        username: data.username,
+        face_data: data.face_data || null,
+        face_frames: data.face_frames || []
+      });
+      console.log("[BIOMETRIC DEBUG] Response data:", response.data);
+      const { access_token } = response.data;
+      const userResponse = await axios.get(`${window.API_BASE}/api/me`, {
+        headers: { Authorization: `Bearer ${access_token}` }
+      });
+      console.log("[BIOMETRIC DEBUG] User details response:", userResponse.data);
+      login(userResponse.data, access_token);
+      if (!userResponse.data.is_profile_complete) navigate('/setup');
+      else navigate('/');
+      toast.success("Biometric authentication successful.");
+    } catch (err) {
+      console.error("[BIOMETRIC DEBUG] Biometric login error:", err.response?.data || err.message);
+      toast.error(err.response?.data?.detail || 'Biometric authentication failed.');
+    } finally { setLoading(false); }
+  };
 
  const handleRecoverPassword = async (e) => {
  e.preventDefault();
