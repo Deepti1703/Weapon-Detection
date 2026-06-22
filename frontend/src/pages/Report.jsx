@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api';
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -49,7 +50,7 @@ const Report = () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`${window.API_BASE}/api/cases/${caseId}`, {
+        const response = await axios.get(`${API_BASE}/api/cases/${caseId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setReportData(response.data);
@@ -59,7 +60,7 @@ const Report = () => {
           const normalizedPath = response.data.image_path.startsWith('/') 
             ? response.data.image_path 
             : `/${response.data.image_path}`;
-          setImageUrl(`${window.API_BASE}${normalizedPath}`);
+          setImageUrl(`${API_BASE}${normalizedPath}`);
         }
       } catch (err) {
         console.error('Error fetching report from database:', err);
@@ -83,7 +84,7 @@ const Report = () => {
     try {
       const token = localStorage.getItem('token');
       // Direct call to export PDF
-      const response = await axios.get(`${window.API_BASE}/api/cases/${reportData.case_id}/export`, {
+      const response = await axios.get(`${API_BASE}/api/cases/${reportData.case_id}/export`, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: 'blob'
       });

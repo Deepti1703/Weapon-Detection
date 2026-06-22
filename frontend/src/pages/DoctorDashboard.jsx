@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -23,14 +24,14 @@ const DoctorDashboard = () => {
  const token = localStorage.getItem('token');
  // Depending on the backend route, it might be /api/doctor/reports or /api/history for all
  // Fallback to /api/history if doctor endpoint is missing
- let url = `${window.API_BASE}/api/doctor/reports`;
+ let url = `${API_BASE}/api/doctor/reports`;
  let response;
  try {
  response = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } });
  } catch (err) {
  // If 404, fallback to an admin-level history fetch if possible, or history
  if (err.response && err.response.status === 404) {
- url = `${window.API_BASE}/api/history`;
+ url = `${API_BASE}/api/history`;
  response = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } });
  } else {
  throw err;
@@ -50,7 +51,7 @@ const DoctorDashboard = () => {
  setSaving(true);
  try {
  const token = localStorage.getItem('token');
- await axios.post(`${window.API_BASE}/api/doctor/reports/${selectedReport.id}/notes`,
+ await axios.post(`${API_BASE}/api/doctor/reports/${selectedReport.id}/notes`,
  { notes },
  { headers: { Authorization: `Bearer ${token}` } }
  );
@@ -100,7 +101,7 @@ const DoctorDashboard = () => {
  <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
  <div>
  {selectedReport.image_path ? (
- <img src={`${window.API_BASE}${selectedReport.image_path}`} alt="Wound" className="w-full h-auto rounded-lg border border-slate-200  object-cover max-h-[300px]" />
+ <img src={`${API_BASE}${selectedReport.image_path}`} alt="Wound" className="w-full h-auto rounded-lg border border-slate-200  object-cover max-h-[300px]" />
  ) : (
  <div className="h-[200px] bg-slate-100 rounded-lg flex items-center justify-center text-slate-400">
  <FaImage size={48} />

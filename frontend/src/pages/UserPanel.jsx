@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
@@ -58,7 +59,7 @@ const UserPanel = () => {
   const fetchUsers = async () => {
     setLoadingUsers(true);
     try {
-      const response = await axios.get(`${window.API_BASE}/api/admin/users`, {
+      const response = await axios.get(`${API_BASE}/api/admin/users`, {
         headers: authHeaders()
       });
       setUsersList(response.data);
@@ -75,7 +76,7 @@ const UserPanel = () => {
   const fetchRecycleBin = async () => {
     setLoadingRecycle(true);
     try {
-      const response = await axios.get(`${window.API_BASE}/api/admin/recycle-bin`, {
+      const response = await axios.get(`${API_BASE}/api/admin/recycle-bin`, {
         headers: authHeaders()
       });
       setRecycleBinList(response.data);
@@ -89,7 +90,7 @@ const UserPanel = () => {
   const fetchRecordsRecycleBin = async () => {
     setLoadingRecordsRecycle(true);
     try {
-      const response = await axios.get(`${window.API_BASE}/api/admin/records/recycle-bin`, {
+      const response = await axios.get(`${API_BASE}/api/admin/records/recycle-bin`, {
         headers: authHeaders()
       });
       setRecycleBinRecords(response.data);
@@ -103,7 +104,7 @@ const UserPanel = () => {
   const fetchVerifications = async () => {
     setLoadingVerifications(true);
     try {
-      const response = await axios.get(`${window.API_BASE}/api/admin/id-verification`, {
+      const response = await axios.get(`${API_BASE}/api/admin/id-verification`, {
         headers: authHeaders()
       });
       setVerificationsList(response.data);
@@ -117,7 +118,7 @@ const UserPanel = () => {
 
   const handleVerifyStatus = async (id, status) => {
     try {
-      await axios.post(`${window.API_BASE}/api/admin/id-verification/${id}/${status}`, {}, {
+      await axios.post(`${API_BASE}/api/admin/id-verification/${id}/${status}`, {}, {
         headers: authHeaders()
       });
       toast.success(`ID verification ${status} successfully.`);
@@ -130,7 +131,7 @@ const UserPanel = () => {
   const fetchModelStats = async () => {
     setLoadingModelStats(true);
     try {
-      const response = await axios.get(`${window.API_BASE}/api/model/stats`, { headers: authHeaders() });
+      const response = await axios.get(`${API_BASE}/api/model/stats`, { headers: authHeaders() });
       setModelStats(response.data);
     } catch (err) {
       console.error(err);
@@ -141,7 +142,7 @@ const UserPanel = () => {
 
   const fetchTrainingStatus = async () => {
     try {
-      const response = await axios.get(`${window.API_BASE}/api/training/status`, { headers: authHeaders() });
+      const response = await axios.get(`${API_BASE}/api/training/status`, { headers: authHeaders() });
       setTrainingStatus(response.data);
       return response.data;
     } catch (err) {
@@ -153,7 +154,7 @@ const UserPanel = () => {
   const handlePrepareDataset = async () => {
     setTrainingBusy(true);
     try {
-      const response = await axios.post(`${window.API_BASE}/api/training/prepare-dataset`, {}, { headers: authHeaders() });
+      const response = await axios.post(`${API_BASE}/api/training/prepare-dataset`, {}, { headers: authHeaders() });
       toast.success(`Dataset ready: ${response.data.total_images} images (${response.data.images_imported} imported).`);
       fetchModelStats();
     } catch (err) {
@@ -165,7 +166,7 @@ const UserPanel = () => {
 
   const fetchVerifiedStats = async () => {
     try {
-      const response = await axios.get(`${window.API_BASE}/api/verified-training/stats`, { headers: authHeaders() });
+      const response = await axios.get(`${API_BASE}/api/verified-training/stats`, { headers: authHeaders() });
       setVerifiedStats(response.data);
     } catch (err) {
       console.error(err);
@@ -174,7 +175,7 @@ const UserPanel = () => {
 
   const fetchVerifiedSamples = async () => {
     try {
-      const response = await axios.get(`${window.API_BASE}/api/verified-training/list`, { headers: authHeaders() });
+      const response = await axios.get(`${API_BASE}/api/verified-training/list`, { headers: authHeaders() });
       setVerifiedSamples(response.data);
     } catch (err) {
       console.error(err);
@@ -183,7 +184,7 @@ const UserPanel = () => {
 
   const fetchTrainingHistory = async () => {
     try {
-      const response = await axios.get(`${window.API_BASE}/api/training/history`, { headers: authHeaders() });
+      const response = await axios.get(`${API_BASE}/api/training/history`, { headers: authHeaders() });
       setTrainingHistory(response.data);
       if (response.data.length > 0) {
         setCompareModelA(prev => prev || response.data[0].training_id);
@@ -200,7 +201,7 @@ const UserPanel = () => {
     if (!window.confirm('Train AI model on verified forensic cases? This may take several minutes.')) return;
     setTrainingBusy(true);
     try {
-      const response = await axios.post(`${window.API_BASE}/api/training/retrain`, trainConfig, { headers: authHeaders() });
+      const response = await axios.post(`${API_BASE}/api/training/retrain`, trainConfig, { headers: authHeaders() });
       setTrainingStatus(response.data);
       toast.success('Training started in background.');
     } catch (err) {
@@ -250,7 +251,7 @@ const UserPanel = () => {
     setSuccess(null);
 
     try {
-      const response = await axios.post(`${window.API_BASE}/api/admin/create-user`, registerForm, {
+      const response = await axios.post(`${API_BASE}/api/admin/create-user`, registerForm, {
         headers: authHeaders()
       });
 
@@ -294,7 +295,7 @@ const UserPanel = () => {
       const dataToSubmit = { ...editUserForm };
       if (dataToSubmit.age === '') dataToSubmit.age = null;
       if (dataToSubmit.dob === '') dataToSubmit.dob = null;
-      await axios.put(`${window.API_BASE}/api/admin/users/${userId}`, dataToSubmit, {
+      await axios.put(`${API_BASE}/api/admin/users/${userId}`, dataToSubmit, {
         headers: authHeaders()
       });
       setEditingUserId(null);
@@ -309,7 +310,7 @@ const UserPanel = () => {
   const handleDeleteUser = async (userId) => {
     if (!window.confirm("Are you sure you want to suspend this user? They will be moved to the waitlist bin.")) return;
     try {
-      await axios.delete(`${window.API_BASE}/api/admin/users/${userId}`, {
+      await axios.delete(`${API_BASE}/api/admin/users/${userId}`, {
         headers: authHeaders()
       });
       fetchUsers();
@@ -322,7 +323,7 @@ const UserPanel = () => {
 
   const handleRecoverUser = async (userId) => {
     try {
-      await axios.post(`${window.API_BASE}/api/admin/users/${userId}/recover`, {}, {
+      await axios.post(`${API_BASE}/api/admin/users/${userId}/recover`, {}, {
         headers: authHeaders()
       });
       fetchRecycleBin();
@@ -335,7 +336,7 @@ const UserPanel = () => {
 
   const handleRecoverRecord = async (recordId) => {
     try {
-      await axios.post(`${window.API_BASE}/api/admin/records/${recordId}/recover`, {}, {
+      await axios.post(`${API_BASE}/api/admin/records/${recordId}/recover`, {}, {
         headers: authHeaders()
       });
       fetchRecordsRecycleBin();
@@ -349,7 +350,7 @@ const UserPanel = () => {
   const handlePermanentDeleteRecord = async (recordId) => {
     if (!window.confirm("Are you sure you want to PERMANENTLY delete this record? This action cannot be undone.")) return;
     try {
-      await axios.delete(`${window.API_BASE}/api/admin/records/${recordId}/permanent`, {
+      await axios.delete(`${API_BASE}/api/admin/records/${recordId}/permanent`, {
         headers: authHeaders()
       });
       fetchRecordsRecycleBin();
@@ -1164,7 +1165,7 @@ const UserPanel = () => {
                         <td className="py-4 px-6 font-bold text-slate-800">{v.username}</td>
                         <td className="py-4 px-6">{v.document_type}</td>
                         <td className="py-4 px-6">
-                          <a href={`${window.API_BASE}${v.document_path}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">View Document</a>
+                          <a href={`${API_BASE}${v.document_path}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">View Document</a>
                         </td>
                         <td className="py-4 px-6">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${v.status === 'approved' ? 'bg-emerald-100 text-emerald-800' :

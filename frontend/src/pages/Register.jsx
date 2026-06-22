@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api';
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
@@ -39,7 +40,7 @@ const Register = () => {
  setLoading(true);
 
  try {
- const response = await axios.post(`${window.API_BASE}/api/register`, {
+ const response = await axios.post(`${API_BASE}/api/register`, {
  name: formData.name,
  email: formData.email,
  phone: formData.phone,
@@ -53,7 +54,7 @@ const Register = () => {
  const { access_token } = response.data;
 
  // Automatically log them in after registration
- const userResponse = await axios.get(`${window.API_BASE}/api/me`, {
+ const userResponse = await axios.get(`${API_BASE}/api/me`, {
  headers: { Authorization: `Bearer ${access_token}` }
  });
 

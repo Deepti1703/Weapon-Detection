@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -68,12 +69,12 @@ const Login = () => {
     setLoading(true);
     console.log("[LOGIN DEBUG] Request payload:", { username: loginUsername, password: loginPassword });
     try {
-      const response = await axios.post(`${window.API_BASE}/api/login`, {
+      const response = await axios.post(`${API_BASE}/api/login`, {
         username: loginUsername, password: loginPassword
       });
       console.log("[LOGIN DEBUG] Response data:", response.data);
       const { access_token } = response.data;
-      const userResponse = await axios.get(`${window.API_BASE}/api/me`, {
+      const userResponse = await axios.get(`${API_BASE}/api/me`, {
         headers: { Authorization: `Bearer ${access_token}` }
       });
       console.log("[LOGIN DEBUG] User details response:", userResponse.data);
@@ -98,14 +99,14 @@ const Login = () => {
     setLoading(true); setShowBiometric(false);
     console.log("[BIOMETRIC DEBUG] Request payload for username:", data.username);
     try {
-      const response = await axios.post(`${window.API_BASE}/api/login/biometric`, {
+      const response = await axios.post(`${API_BASE}/api/login/biometric`, {
         username: data.username,
         face_data: data.face_data || null,
         face_frames: data.face_frames || []
       });
       console.log("[BIOMETRIC DEBUG] Response data:", response.data);
       const { access_token } = response.data;
-      const userResponse = await axios.get(`${window.API_BASE}/api/me`, {
+      const userResponse = await axios.get(`${API_BASE}/api/me`, {
         headers: { Authorization: `Bearer ${access_token}` }
       });
       console.log("[BIOMETRIC DEBUG] User details response:", userResponse.data);
@@ -123,7 +124,7 @@ const Login = () => {
  e.preventDefault();
  setLoading(true);
  try {
- const response = await axios.post(`${window.API_BASE}/api/forgot-password`, {
+ const response = await axios.post(`${API_BASE}/api/forgot-password`, {
  username: loginUsername, email: recoveryEmail
  });
  setRecoverySuccess(response.data.temporary_password);
@@ -150,9 +151,9 @@ const Login = () => {
  setLoading(true);
  try {
  // Trigger Email OTP
- await axios.post(`${window.API_BASE}/api/auth/send-otp`, { identifier: regData.email });
+ await axios.post(`${API_BASE}/api/auth/send-otp`, { identifier: regData.email });
  // Trigger Phone OTP
- await axios.post(`${window.API_BASE}/api/auth/send-otp`, { identifier: regData.phone });
+ await axios.post(`${API_BASE}/api/auth/send-otp`, { identifier: regData.phone });
 
  toast.success("OTP sent successfully");
  setRegStep(2);
@@ -165,7 +166,7 @@ const Login = () => {
  e.preventDefault();
  setLoading(true);
  try {
- const response = await axios.post(`${window.API_BASE}/api/register`, {
+ const response = await axios.post(`${API_BASE}/api/register`, {
  ...regData,
  face_data: faceData,
  role: 'forensic_analyst',
@@ -173,7 +174,7 @@ const Login = () => {
  phone_otp: otpData.phone_otp
  });
  const { access_token } = response.data;
- const userResponse = await axios.get(`${window.API_BASE}/api/me`, {
+ const userResponse = await axios.get(`${API_BASE}/api/me`, {
  headers: { Authorization: `Bearer ${access_token}` }
  });
  login(userResponse.data, access_token);
