@@ -164,7 +164,8 @@ def generate_report_pdf(report, user, image_path: str = None, case=None) -> str:
     notes_paragraphs.append(Paragraph("<b>Forensic Case Notes:</b>", normal_bold_style))
     if getattr(report, "forensic_notes", None):
         for note in report.forensic_notes:
-            notes_paragraphs.append(Paragraph(f"• {note}", normal_style))
+            if note is not None:
+                notes_paragraphs.append(Paragraph(f"• {str(note)}", normal_style))
     else:
         notes_paragraphs.append(Paragraph("• No forensic notes logged.", normal_style))
         
@@ -172,7 +173,8 @@ def generate_report_pdf(report, user, image_path: str = None, case=None) -> str:
     notes_paragraphs.append(Paragraph("<b>Critical Precautions:</b>", normal_bold_style))
     if getattr(report, "precautions", None):
         for prec in report.precautions:
-            notes_paragraphs.append(Paragraph(f"• <font color='#B91C1C'>{prec}</font>", normal_style))
+            if prec is not None:
+                notes_paragraphs.append(Paragraph(f"• <font color='#B91C1C'>{str(prec)}</font>", normal_style))
     else:
         notes_paragraphs.append(Paragraph("• No precautions issued.", normal_style))
         
